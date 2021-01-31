@@ -1,0 +1,4 @@
+dist/
+src/migrations/
+.vscode/
+node_modules/

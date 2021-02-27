@@ -3,7 +3,7 @@ import {
  Arg, Ctx, Field, InputType, Mutation, ObjectType, Query, Resolver,
 } from 'type-graphql'
 import argon2 from 'argon2'
-import { User } from '../entities/User'
+import { Person } from '../entities/Person'
 
 // InputTypes we use for arguments
 @InputType()
@@ -26,21 +26,21 @@ class FieldError {
 
 // Object types we use for returning
 @ObjectType()
-class UserResponse {
+class PersonResponse {
   @Field(() => [FieldError], { nullable: true })
   errors?: FieldError[]
 
-  @Field(() => User, { nullable: true })
-  user?: User
+  @Field(() => Person, { nullable: true })
+  person?: Person
 }
 
 @Resolver()
-export class UserResolver {
-  @Mutation(() => UserResponse)
+export class PersonResolver {
+  @Mutation(() => PersonResponse)
   async register(
     @Arg('options', () => UsernamePasswordInput) options: UsernamePasswordInput,
     @Ctx() { em }: MyContext,
-  ): Promise<UserResponse> {
+  ): Promise<PersonResponse> {
     if (options.username.length <= 2) {
       return {
         errors: [{
@@ -60,31 +60,28 @@ export class UserResolver {
     }
 
     const hashedPassword = await argon2.hash(options.password)
-    let user
+    let person
     try {
-      user = em.create(User, { username: options.username, password: hashedPassword })
-      await em.persistAndFlush(user)
+      person = em.create(Person, { username: options.username, password: hashedPassword })
+      await em.persistAndFlush(person)
     } catch (err) {
-      if (err.code === '23505') {
-        return {
-          errors: [{
-            field: 'username',
-            message: 'username already exists',
-          }],
-        }
+      return {
+        errors: [{
+          field: 'username',
+          message: 'username already exists',
+        }],
       }
-      throw err
     }
-    return { user }
+    return { person }
   }
 
-  @Mutation(() => UserResponse)
+  @Mutation(() => PersonResponse)
   async login(
     @Arg('options', () => UsernamePasswordInput) options: UsernamePasswordInput,
     @Ctx() { em }: MyContext,
-  ): Promise<UserResponse> {
-    const user = await em.findOne(User, { username: options.username })
-    if (!user) {
+  ): Promise<PersonResponse> {
+    const person = await em.findOne(Person, { username: options.username })
+    if (!person) {
       return {
         errors: [{
           field: 'username',
@@ -92,7 +89,7 @@ export class UserResolver {
         }],
       }
     }
-    const valid = await argon2.verify(user.password, options.password)
+    const valid = await argon2.verify(person.password, options.password)
     if (!valid) {
       return {
         errors: [{
@@ -102,15 +99,15 @@ export class UserResolver {
       }
     }
     return {
-      user,
+      person,
     }
   }
 
-  @Query(() => User, { nullable: true })
-  user(
+  @Query(() => Person, { nullable: true })
+  person(
     @Arg('id') id: number,
     @Ctx() { em }: MyContext,
-  ): Promise<User | null> {
-    return em.findOne(User, { id })
+  ): Promise<Person | null> {
+    return em.findOne(Person, { id })
   }
 }

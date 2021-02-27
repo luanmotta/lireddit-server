@@ -33,9 +33,9 @@
   },
   "dependencies": {
     "@mikro-orm/cli": "^4.3.4",
-    "@mikro-orm/core": "^4.3.4",
+    "@mikro-orm/core": "^4.4.4",
     "@mikro-orm/migrations": "^4.3.4",
-    "@mikro-orm/postgresql": "^4.3.4",
+    "@mikro-orm/postgresql": "^4.4.4",
     "apollo-server-express": "^2.19.2",
     "argon2": "^0.27.1",
     "express": "^4.17.1",

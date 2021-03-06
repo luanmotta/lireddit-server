@@ -36,10 +36,23 @@ class PersonResponse {
 
 @Resolver()
 export class PersonResolver {
+  @Query(() => Person, { nullable: true })
+  async me(
+    @Ctx() { em, req }: MyContext,
+  ): Promise<Person | null> {
+    // You are not loged in
+    if (!req.session.personId) {
+      return null
+    }
+
+    const person = await em.findOne(Person, { id: req.session.personId })
+    return person
+  }
+
   @Mutation(() => PersonResponse)
   async register(
     @Arg('options', () => UsernamePasswordInput) options: UsernamePasswordInput,
-    @Ctx() { em }: MyContext,
+    @Ctx() { em, req }: MyContext,
   ): Promise<PersonResponse> {
     if (options.username.length <= 2) {
       return {
@@ -72,6 +85,10 @@ export class PersonResolver {
         }],
       }
     }
+    // store user id session
+    // this will set a cookie on the user
+    // keep them logged in
+    req.session.personId = person.id
     return { person }
   }
 
@@ -99,7 +116,7 @@ export class PersonResolver {
       }
     }
 
-    req.session.userId = person.id
+    req.session.personId = person.id
 
     return {
       person,

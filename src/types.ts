@@ -4,6 +4,6 @@ import session from 'express-session'
 
 export type MyContext = {
   em: EntityManager<any> & EntityManager<IDatabaseDriver<Connection>>
-  req: Request & { session: session.Session & { userId?: Number } },
+  req: Request & { session: session.Session & { personId?: number } },
   res: Response,
 }

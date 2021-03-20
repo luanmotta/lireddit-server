@@ -1,9 +1,17 @@
 import { MyContext } from 'src/types'
 import {
- Arg, Ctx, Field, InputType, Mutation, ObjectType, Query, Resolver,
+  Arg,
+  Ctx,
+  Field,
+  InputType,
+  Mutation,
+  ObjectType,
+  Query,
+  Resolver,
 } from 'type-graphql'
 import argon2 from 'argon2'
 import { Person } from '../entities/Person'
+// import { EntityManager } from '@mikro-orm/postgresql'
 
 // InputTypes we use for arguments
 @InputType()
@@ -37,9 +45,7 @@ class PersonResponse {
 @Resolver()
 export class PersonResolver {
   @Query(() => Person, { nullable: true })
-  async me(
-    @Ctx() { em, req }: MyContext,
-  ): Promise<Person | null> {
+  async me(@Ctx() { em, req }: MyContext): Promise<Person | null> {
     // You are not loged in
     if (!req.session.personId) {
       return null
@@ -56,33 +62,50 @@ export class PersonResolver {
   ): Promise<PersonResponse> {
     if (options.username.length <= 2) {
       return {
-        errors: [{
-          field: 'username',
-          message: 'length must be greater than 2',
-        }],
+        errors: [
+          {
+            field: 'username',
+            message: 'length must be greater than 2',
+          },
+        ],
       }
     }
 
     if (options.password.length <= 2) {
       return {
-        errors: [{
-          field: 'password',
-          message: 'length must be greater than 2',
-        }],
+        errors: [
+          {
+            field: 'password',
+            message: 'length must be greater than 2',
+          },
+        ],
       }
     }
 
     const hashedPassword = await argon2.hash(options.password)
     let person
     try {
-      person = em.create(Person, { username: options.username, password: hashedPassword })
+      person = em.create(Person, {
+        username: options.username,
+        password: hashedPassword,
+      })
+      // Using query knex builder
+      // eslint-disable-next-line max-len
+      // const [user] = await (em as EntityManager).createQueryBuilder(Person).getKnexQuery().insert({
+      //   username: options.username,
+      //   password: hashedPassword,
+      //   created_at: new Date(),
+      //   updated_at: new Date(),
+      // }).returning('*')
       await em.persistAndFlush(person)
     } catch (err) {
       return {
-        errors: [{
-          field: 'username',
-          message: 'username already exists',
-        }],
+        errors: [
+          {
+            field: 'username',
+            message: 'username already exists',
+          },
+        ],
       }
     }
     // store user id session
@@ -100,19 +123,24 @@ export class PersonResolver {
     const person = await em.findOne(Person, { username: options.username })
     if (!person) {
       return {
-        errors: [{
-          field: 'username',
-          message: 'that username doesn\'t exists',
-        }],
+        errors: [
+          {
+            field: 'username',
+            // eslint-disable-next-line quotes
+            message: "that username doesn't exists",
+          },
+        ],
       }
     }
     const valid = await argon2.verify(person.password, options.password)
     if (!valid) {
       return {
-        errors: [{
-          field: 'password',
-          message: 'incorrect password',
-        }],
+        errors: [
+          {
+            field: 'password',
+            message: 'incorrect password',
+          },
+        ],
       }
     }
 

@@ -6,6 +6,7 @@ import { buildSchema } from 'type-graphql'
 import redis from 'redis'
 import session from 'express-session'
 import connectRedis from 'connect-redis'
+import cors from 'cors'
 
 import microConfig from './mikro-orm.config'
 import { HelloResolver } from './resolvers/hello'
@@ -13,7 +14,6 @@ import { PostResolver } from './resolvers/post'
 import { PersonResolver } from './resolvers/person'
 import { __prod__ } from './constants'
 import { MyContext } from './types'
-import cors from 'cors'
 
 const SERVER_PORT = 4000
 

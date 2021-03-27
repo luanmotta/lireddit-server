@@ -10,7 +10,9 @@ import {
   Resolver,
 } from 'type-graphql'
 import argon2 from 'argon2'
+import { COOKIE_NAME } from '../constants'
 import { Person } from '../entities/Person'
+
 // import { EntityManager } from '@mikro-orm/postgresql'
 
 // InputTypes we use for arguments
@@ -157,5 +159,19 @@ export class PersonResolver {
     @Ctx() { em }: MyContext,
   ): Promise<Person | null> {
     return em.findOne(Person, { id })
+  }
+
+  @Mutation(() => Boolean)
+  logout(@Ctx() { req, res }: MyContext): Promise<Boolean> {
+    return new Promise((resolve) => {
+      req.session.destroy((err) => {
+        res.clearCookie(COOKIE_NAME)
+        if (err) {
+          console.log(err)
+          resolve(false)
+        }
+        resolve(true)
+      })
+    })
   }
 }

@@ -12,7 +12,7 @@ import microConfig from './mikro-orm.config'
 import { HelloResolver } from './resolvers/hello'
 import { PostResolver } from './resolvers/post'
 import { PersonResolver } from './resolvers/person'
-import { __prod__ } from './constants'
+import { COOKIE_NAME, __prod__ } from './constants'
 import { MyContext } from './types'
 
 const SERVER_PORT = 4000
@@ -34,7 +34,7 @@ const main = async () => {
 
   app.use(
     session({
-      name: 'qid',
+      name: COOKIE_NAME,
       store: new RedisStore({
         client: redisClient,
         disableTouch: true,
